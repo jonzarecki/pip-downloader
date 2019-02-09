@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+    <div align="center">
+    <h1> Pip Downloader ! </h1>
+
+    <div align="center">
+        <form method="post"  enctype="multipart/form-data">
+            {% csrf_token %}
+
+            {{ form.as_p }}
+            <button bac="submit">Download</button>
+        </form>
+
+        <div id="errorMsg" style="color: #ff0000">{{ msg }} </div>
+    </div>
+
+{% endblock %}
