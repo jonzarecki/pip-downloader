@@ -7,6 +7,7 @@ from wsgiref.util import FileWrapper
 
 from django.shortcuts import render
 
+from uploads import pip_download
 from uploads.core.forms import NameForm
 import os
 from django.http import HttpResponse
@@ -33,17 +34,11 @@ def get_name(request):
             # process the data in form.cleaned_data as required
             rand_name = str(int(time.time())) + "-" + str(random.random())[2:]
             package_folder = DOWNLOAD_TMP_PATH + rand_name
-            if form.cleaned_data['python_ver'] == '3':
-                pip_cmd = 'pip3'
-            else:
-                pip_cmd = 'pip'  # fix for EC2
+            abi = form.cleaned_data['abi_ver']
+            os_ver = form.cleaned_data['os_version']
+            res = pip_download.pip_download(form.cleaned_data['package'], package_folder, os_ver, abi)
 
-            if 'win' in form.cleaned_data['os_version']:
-                res = subprocess.call([pip_cmd, 'download', form.cleaned_data['package'], '-d', package_folder,
-                                       "--only-binary=:all:", "--platform", form.cleaned_data['os_version']])
-            else:  # none or linux (which is installed)
-                res = subprocess.call([pip_cmd, 'download', form.cleaned_data['package'], '-d', package_folder])
-            if res == 0:  # found package
+            if res is not None:  # found package
                 shutil.make_archive(package_folder, 'zip', package_folder + "/")
 
                 shutil.rmtree(package_folder)
@@ -60,8 +55,10 @@ def get_name(request):
                         continue
 
                 wrapper = FileWrapper(open(package_folder + ".zip", 'rb'))
+                print("hello world")
+                print(package_folder + ".zip")
                 response = HttpResponse(wrapper, content_type='application/force-download')
-                response['Content-Disposition'] = 'inline; filename=python' + form.cleaned_data['python_ver'] + '-' + \
+                response['Content-Disposition'] = 'inline; filename=python' + os_ver + "-" + abi + '-' + \
                                                   form.cleaned_data['package'] + '.zip'
 
                 return response

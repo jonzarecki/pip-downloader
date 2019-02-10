@@ -1,0 +1,1 @@
+FOR /D [/r] %%filename IN (%~f1) DO pip install %filename
