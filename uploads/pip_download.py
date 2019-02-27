@@ -27,7 +27,6 @@ def peform_pip_download(package_name, package_install_path, os_platform, abi, ar
     sys.version_info = tuple([int(d) for d in py_ver])  # read to check version
     res = pip._internal.main(['download', package_name, '-d', package_install_path] + args)
     shutil.copy(install_file_path, package_install_path)  # install path
-    print(args[-1])
     return res
 
 
