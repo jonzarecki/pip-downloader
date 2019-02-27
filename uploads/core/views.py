@@ -39,11 +39,11 @@ def get_name(request):
             os_ver = form.cleaned_data['os_version']
             res = pip_download.pip_download(form.cleaned_data['package'], package_folder, os_ver, abi)
 
-            file_count = sum([len(files) for r, d, files in os.walk(package_folder)])
+            file_count = sum([len([f for f in files if not f.endswith(".py")]) for r, d, files in os.walk(package_folder)])
             if file_count != 0:  # found package
                 shutil.make_archive(package_folder, 'zip', package_folder + "/")
 
-                shutil.rmtree(package_folder)
+                shutil.rmtree(package_folder, ignore_errors=True)
 
                 for filename in os.listdir(DOWNLOAD_TMP_PATH):
                     if filename.endswith(".zip"):  #
@@ -64,6 +64,7 @@ def get_name(request):
 
                 return response
             else:
+                shutil.rmtree(package_folder, ignore_errors=True)
                 msg = 'Package not found'
 
     # if a GET (or any other method) we'll create a blank form
