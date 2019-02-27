@@ -51,8 +51,8 @@ def get_name(request):
                         creation_time = os.path.getmtime(filepath)
                         hours, rest = divmod(time.time() - creation_time, 3600)
                         if hours >= 1:
-                            # os.remove(filepath)
-                            shutil.rmtree(filepath)
+                            os.remove(filepath)
+                            shutil.rmtree(filepath, ignore_errors=True)
                     else:
                         continue
 
