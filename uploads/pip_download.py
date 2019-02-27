@@ -29,18 +29,35 @@ def peform_pip_download(args, os_platform, abi):
 def pip_download(package_name, package_install_path, os_platform, abi):
     # now downloading all source (for other platforms to use) no need for hacks
     # install all in source
-    p2 = Process(target=peform_pip_download,
+    procs = []
+    p1 = Process(target=peform_pip_download,
                 args=(['download', package_name, '-d', package_install_path + "/sources/",
                        "--no-binary=:all:"], os_platform, abi))
-    p2.start()
-
-    p1 = Process(target=peform_pip_download, args=(['download', package_name, '-d', package_install_path],
-                                                  os_platform, abi))    # install all in requested os
     p1.start()
-    p1.join()
-    p2.join()
-    print("all packages are now installed :)")
+    procs.append(p1)
 
-    res1 = p1.exitcode
-    res2 = p2.exitcode
-    return str(res1) + " " + str(res2)
+    if os_platform == 'linux_win_amd64':
+        p = Process(target=peform_pip_download, args=(['download', package_name, '-d', package_install_path + "/win_amd64/"],
+                                                      'win_amd64', abi))    # install all in requested os
+        p.start()
+        procs.append(p)
+
+        p = Process(target=peform_pip_download, args=(['download', package_name, '-d', package_install_path + "/manylinux1_x86_64/"],
+                                                      "manylinux1_x86_64", abi))    # install all in requested os
+        p.start()
+        procs.append(p)
+
+    else:
+        p = Process(target=peform_pip_download, args=(['download', package_name, '-d', package_install_path],
+                                                      os_platform, abi))    # install all in requested os
+        p.start()
+        procs.append(p)
+
+    res = True
+    for p in procs:
+        p.join()
+        if p.exitcode != 0:
+            res = False
+
+    print("all packages are now installed :)")
+    return res

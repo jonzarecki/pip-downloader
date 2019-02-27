@@ -22,6 +22,7 @@ DOWNLOAD_TMP_PATH = "/home/ec2-user/pip_downloader/tmp/"
 if not os.path.exists(DOWNLOAD_TMP_PATH):  # not in ec2
     DOWNLOAD_TMP_PATH = "/media/yonatanz/yz/tmp/"
 
+all_os_version = ['win_amd64', '']
 
 def get_name(request):
     msg = ''
@@ -38,7 +39,8 @@ def get_name(request):
             os_ver = form.cleaned_data['os_version']
             res = pip_download.pip_download(form.cleaned_data['package'], package_folder, os_ver, abi)
 
-            if res is not None:  # found package
+            file_count = sum([len(files) for r, d, files in os.walk(package_folder)])
+            if file_count != 0:  # found package
                 shutil.make_archive(package_folder, 'zip', package_folder + "/")
 
                 shutil.rmtree(package_folder)
@@ -48,18 +50,17 @@ def get_name(request):
                         filepath = DOWNLOAD_TMP_PATH + filename
                         creation_time = os.path.getmtime(filepath)
                         hours, rest = divmod(time.time() - creation_time, 3600)
-                        if hours >= 2:
-                            os.remove(filepath)
-                            # shutil.rm(filepath)
+                        if hours >= 1:
+                            # os.remove(filepath)
+                            shutil.rmtree(filepath)
                     else:
                         continue
 
                 wrapper = FileWrapper(open(package_folder + ".zip", 'rb'))
-                print("hello world")
                 print(package_folder + ".zip")
                 response = HttpResponse(wrapper, content_type='application/force-download')
-                response['Content-Disposition'] = 'inline; filename=python' + os_ver + "-" + abi + '-' + \
-                                                  form.cleaned_data['package'] + '.zip'
+                response['Content-Disposition'] = 'inline; filename=' + form.cleaned_data['package'] + '_' + os_ver + \
+                                                  "-" + abi + '-' + '.zip'
 
                 return response
             else:
