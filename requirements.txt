@@ -1,2 +1,2 @@
-streamlit==0.85.*
+streamlit==0.*
 pip==19.*
