@@ -10,6 +10,8 @@ import streamlit as st
 import pip_download
 
 ABI_VERSION = (
+	'cp38m',
+	'cp37m',
 	'cp36m',
 	'cp35m',
 	'cp27m',
@@ -33,7 +35,7 @@ if __name__ == '__main__':
 
 	package = st.text_input(label='Package name')
 
-	abi = st.selectbox(options=ABI_VERSION, label='Python version')
+	abi = st.selectbox(options=ABI_VERSION, label='Python version', index=1)
 	os_ver = st.selectbox(options=OS_CHOICES, label='OS')
 	c1, c2, c3 = st.columns(3)
 

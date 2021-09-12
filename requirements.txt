@@ -1,2 +1,2 @@
 streamlit==0.*
-pip==19.*
+pip==19.0
