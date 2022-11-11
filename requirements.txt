@@ -1,2 +1,2 @@
-streamlit==1.10.*
 pip==19.0
+streamlit==1.10.*
