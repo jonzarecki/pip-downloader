@@ -1,4 +1,5 @@
 import re
+import subprocess
 import sys
 from multiprocessing import Process
 
@@ -9,7 +10,7 @@ os_platform = "win_amd64"
 abi = "cp36m"
 
 
-def peform_pip_download(package_name, package_install_path, os_platform, abi, args=list()):
+def perform_pip_download(package_name, package_install_path, os_platform, abi, args=list()):
     import pip
     from pip._internal import pep425tags
 
@@ -26,27 +27,32 @@ def peform_pip_download(package_name, package_install_path, os_platform, abi, ar
 def pip_download(package_name, package_install_path, os_platform, abi):
     # now downloading all source (for other platforms to use) no need for hacks
     # install all in source
+    subprocess.run("python -m pip install \"pip==19.0\"", shell=True, check=True)
+    p = Process(target=perform_pip_download, args=())
+    p.start()
+    p.join()
+
     procs = []
-    p1 = Process(target=peform_pip_download,
+    p1 = Process(target=perform_pip_download,
                  args=(package_name, package_install_path + "/sources/", os_platform, abi, ["--no-binary=:all:"]))
 
     p1.start()
     procs.append(p1)
 
     if os_platform == 'linux_win_amd64':
-        p = Process(target=peform_pip_download, args=(package_name, package_install_path + "/win_amd64/",
+        p = Process(target=perform_pip_download, args=(package_name, package_install_path + "/win_amd64/",
                                                       'win_amd64', abi))  # install all in requested os
         p.start()
         procs.append(p)
 
-        p = Process(target=peform_pip_download, args=(package_name, package_install_path + "/manylinux1_x86_64/",
+        p = Process(target=perform_pip_download, args=(package_name, package_install_path + "/manylinux1_x86_64/",
                                                       "manylinux1_x86_64", abi))  # install all in requested os
         p.start()
         procs.append(p)
 
     else:
-        p = Process(target=peform_pip_download, args=(package_name, package_install_path,
-                                                      os_platform, abi))  # install all in requested os
+        p = Process(target=perform_pip_download, args=(package_name, package_install_path,
+                                                       os_platform, abi))  # install all in requested os
         p.start()
         procs.append(p)
 
