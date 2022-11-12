@@ -1,7 +1,7 @@
 import re
-import subprocess
 import sys
 from multiprocessing import Process
+from typing import NamedTuple
 
 # package_install_path = raw_input()
 package_name = "bokeh"
@@ -11,15 +11,18 @@ abi = "cp36m"
 
 
 def perform_pip_download(package_name, package_install_path, os_platform, abi, args=list()):
-    import pip
-    from pip._internal import pep425tags
+    import pip._internal
+    from pip._vendor.distlib import util
+    import pip._vendor.distlib.wheel as whl
 
     py_ver = re.sub(r"\D", "", abi)
-
     # source-code hacks
-    pep425tags.get_platform = lambda: os_platform  # set here
-    pep425tags.get_abi_tag = lambda: abi  # set here
-    sys.version_info = tuple([int(d) for d in py_ver])  # read to check version
+    util.get_platform = lambda: os_platform  # set here
+    whl.ABI = abi  # lambda: abi  # set here
+    # vi = Mock()
+    sys_info = NamedTuple('sys_info', [('major', int), ('minor', int)])
+    vi = sys_info(*[int(d) for d in py_ver])
+    sys.version_info = vi  # tuple([int(d) for d in py_ver])  # read to check version
     res = pip._internal.main(['download', package_name, '-d', package_install_path] + args)
     return res
 
@@ -27,10 +30,6 @@ def perform_pip_download(package_name, package_install_path, os_platform, abi, a
 def pip_download(package_name, package_install_path, os_platform, abi):
     # now downloading all source (for other platforms to use) no need for hacks
     # install all in source
-    subprocess.run("python -m pip install \"pip==19.0\"", shell=True, check=True)
-    p = Process(target=perform_pip_download, args=())
-    p.start()
-    p.join()
 
     procs = []
     p1 = Process(target=perform_pip_download,
