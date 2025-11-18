@@ -1,1 +1,2 @@
 streamlit==1.10.*
+altair<5,>=4.2.0
